@@ -1,18 +1,10 @@
 package com.example.show.testflicker;
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.ProcessingInstruction;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;

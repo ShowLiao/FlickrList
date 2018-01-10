@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -35,7 +36,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -152,20 +155,28 @@ public class MainActivity extends AppCompatActivity implements HTTPConnect.Callb
                 TextView viewDesc = convertView.findViewById(R.id.photo_desc);
                 viewDesc.setText(apps.get(position).getTitle());
 
-//                new DownloadImageFromInternet((ImageView) findViewById(R.id.imgView))
-//                        .execute(apps.get(position).getSquarePhotoURL());
-                ImageView img = convertView.findViewById(R.id.imgView);
-                Bitmap bimage = null;
-                try {
-                    InputStream in = new java.net.URL(apps.get(position).getSquarePhotoURL()).openStream();
-                    bimage = BitmapFactory.decodeStream(in);
+                new DownloadImageFromInternet((ImageView) findViewById(R.id.imgView))
+                        .execute(apps.get(position).getSquarePhotoURL());
+//                ImageView img = convertView.findViewById(R.id.imgView);
+//                Bitmap bimage = null;
+//                InputStream in = null;
+//                try {
+//                    in = new java.net.URL(apps.get(position).getSquarePhotoURL()).openStream();
+//                    bimage = BitmapFactory.decodeStream(in);
+//
+//                } catch (Exception e) {
+//
+//                    e.printStackTrace();
+//                } finally {
+//                    if (null != in)
+//                        try {
+//                            in.close();
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                }
+//                img.setImageBitmap(bimage);
 
-                } catch (Exception e) {
-
-                    e.printStackTrace();
-                }
-                 img.setImageBitmap(bimage);
-//                return super.getView(position, convertView, parent);
                 return convertView;
             }
 
@@ -201,31 +212,57 @@ public class MainActivity extends AppCompatActivity implements HTTPConnect.Callb
         }
     };
 
-//    private class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
-//        ImageView imageView;
-//
-//        public DownloadImageFromInternet(ImageView imageView) {
-//            this.imageView = imageView;
-////            Toast.makeText(getApplicationContext(), "Please wait, it may take a few minute...", Toast.LENGTH_SHORT).show();
-//        }
-//
-//        protected Bitmap doInBackground(String... urls) {
-//            String imageURL = urls[0];
-//            Bitmap bimage = null;
-//            try {
-//                InputStream in = new java.net.URL(imageURL).openStream();
-//                bimage = BitmapFactory.decodeStream(in);
-//
-//            } catch (Exception e) {
-//                Log.e("Error Message", e.getMessage());
-//                e.printStackTrace();
-//            }
-//            return bimage;
-//        }
-//
-//        protected void onPostExecute(Bitmap result) {
-//            imageView.setImageBitmap(result);
-//        }
-//    }
+    private class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
+        private WeakReference<ImageView> imageView;
+
+        public DownloadImageFromInternet(ImageView img) {
+            this.imageView = new WeakReference<ImageView>(img);
+//            Toast.makeText(getApplicationContext(), "Please wait, it may take a few minute...", Toast.LENGTH_SHORT).show();
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            return downLoadBitmap(urls[0]);
+
+        }
+
+        protected void onPostExecute(Bitmap result) {
+
+            if (isCancelled())
+                result = null;
+
+            if (imageView != null) {
+                ImageView img = imageView.get();
+                if (img != null) {
+                    if (result != null) {
+                        img.setImageBitmap(result);
+                    } else {
+                        Drawable placeholder = null;
+                        img.setImageDrawable(placeholder);
+                    }
+                }
+            }
+        }
+
+        private Bitmap downLoadBitmap(String url) {
+            Bitmap bimage = null;
+            InputStream in = null;
+            try {
+                in = new java.net.URL(url).openStream();
+                bimage = BitmapFactory.decodeStream(in);
+
+            } catch (Exception e) {
+                Log.e("Error Message", e.getMessage());
+                e.printStackTrace();
+            } finally {
+                if (null != in)
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+            }
+            return bimage;
+        }
+    }
 
 }
