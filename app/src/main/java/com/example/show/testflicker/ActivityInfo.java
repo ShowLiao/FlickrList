@@ -9,7 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -62,10 +62,9 @@ public class ActivityInfo extends AppCompatActivity implements HTTPConnect.Callb
     final Handler handler = new Handler() {
         public void handleMessage(Message msg) {
 
-//            List<ImgConetent> img = (List<ImgConetent>) msg.obj;
-//            imgInfo = img.get(0);
             processData(msg);
             displayInfo();
+
         }
     };
 
@@ -81,31 +80,28 @@ public class ActivityInfo extends AppCompatActivity implements HTTPConnect.Callb
         String jsonString = (String)msg.obj;
         try {
             JSONObject root = new JSONObject(jsonString.replace("jsonFlickrApi(", "").replace(")", ""));
-            JSONObject photo = root.getJSONObject("photo");
-            JSONObject owner = photo.getJSONObject("owner");
-            JSONObject title = photo.getJSONObject("title");
+            JSONObject photo = root.getJSONObject(STR_PHOTO);
+            JSONObject owner = photo.getJSONObject(STR_OWNER);
+            JSONObject title = photo.getJSONObject(STR_TITLE);
             JSONObject desc = photo.getJSONObject(STR_DESC);
 
-//            JSONArray imageJSONArray = photos.getJSONArray("photo");
-//            for (int i = 0; i < imageJSONArray.length(); i++) {
-//                JSONObject item = imageJSONArray.getJSONObject(i);
-//
-                Log.e("user name", owner.getString(STR_USER_NAME));
-                imgInfo.setUsername(owner.getString(STR_USER_NAME));
-                imgInfo.setDesc(desc.getString(STR_CONTENT));
-                imgInfo.setTitle(title.getString(STR_CONTENT));
-//                JSONArray tags = item.getJSONArray(STR_TAGS);
-//                String tag = "";
-//                for (int j=0; j<tags.length(); j++) {
-//                    JSONObject tmp = tags.getJSONObject(j);
-//                    if (0 == tag.length())
-//                        tag = tmp.getString(STR_TAG);
-//                    else
-//                        tag = tag + "," + tmp.getString(STR_TAG);
-//                    Log.e("tag", tag);
-//                }
-//                imgInfo.setTag(tag);
-//            }
+            imgInfo.setUsername(owner.getString(STR_USER_NAME));
+            imgInfo.setDesc(desc.getString(STR_CONTENT));
+            imgInfo.setTitle(title.getString(STR_CONTENT));
+
+            JSONObject theTags = photo.getJSONObject(STR_TAGS);
+            JSONArray  tags = theTags.getJSONArray(STR_TAG);
+            String tag = "";
+            for (int j=0; j<tags.length(); j++) {
+
+                JSONObject tmp = tags.getJSONObject(j);
+                if (0 == tag.length())
+                    tag = STR_TAGS + ":" + tmp.getString(STR_CONTENT);
+                else
+                    tag = tag + "," + tmp.getString(STR_CONTENT);
+
+            }
+            imgInfo.setTag(tag);
 
         } catch(JSONException e){
             e.printStackTrace();
@@ -133,12 +129,11 @@ public class ActivityInfo extends AppCompatActivity implements HTTPConnect.Callb
 
         public DownloadImageFromInternet(ImageView img) {
             this.imageView = new WeakReference<ImageView>(img);
-//            Toast.makeText(getApplicationContext(), "Please wait, it may take a few minute...", Toast.LENGTH_SHORT).show();
+
         }
 
         protected Bitmap doInBackground(String... urls) {
             return downLoadBitmap(urls[0]);
-
         }
 
         protected void onPostExecute(Bitmap result) {
@@ -160,23 +155,28 @@ public class ActivityInfo extends AppCompatActivity implements HTTPConnect.Callb
         }
 
         private Bitmap downLoadBitmap(String url) {
+
             Bitmap bimage = null;
             InputStream in = null;
+
             try {
+
                 in = new java.net.URL(url).openStream();
                 bimage = BitmapFactory.decodeStream(in);
 
             } catch (Exception e) {
-                Log.e("Error Message", e.getMessage());
                 e.printStackTrace();
             } finally {
-                if (null != in)
+
+                if (null != in) {
                     try {
                         in.close();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                }
             }
+
             return bimage;
         }
     }

@@ -1,16 +1,5 @@
 package com.example.show.testflicker;
 
-import android.content.Context;
-import android.util.Log;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.List;
-
 public class FlickrMgr {
 
     private static final String FLICKR_API_KEY = "&api_key=6bf318919bbbc455f3573d18798a58e3";
@@ -56,7 +45,6 @@ public class FlickrMgr {
 
     public static String searchPhoto(String searchStr) {
 
-        Log.e("searchPhoto:", searchStr);
         String url = createURL(FLICKR_SEARCH, searchStr);
         return url;
 
@@ -70,9 +58,10 @@ public class FlickrMgr {
     }
 
     public static String getPhotoInfo(String id) {
-        Log.e("===id:", id);
+
         String url = createURL(FLICKR_GET_INFO, id);
         return url;
+
     }
 
     public static String createPhotoURL(int photoType, ImgConetent imgCon) {

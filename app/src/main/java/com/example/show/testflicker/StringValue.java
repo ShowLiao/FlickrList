@@ -17,4 +17,8 @@ public final class StringValue {
     public static final String STR_SERVER = "server";
     public static final String STR_SECRET = "secret";
     public static final String STR_CONTENT = "_content";
+    public static final String STR_OWNER = "owner";
+    public static final String STR_FARM = "farm";
+    public static final String STR_PHOTOS = "photos";
+    public static final String STR_PHOTO = "photo";
 }

@@ -2,10 +2,6 @@ package com.example.show.testflicker;
 
 import android.graphics.Bitmap;
 
-/**
- * Created by show on 1/10/18.
- */
-
 public class ImgConetent {
     String id;
     String owner;

@@ -1,9 +1,5 @@
 package com.example.show.testflicker;
 
-/**
- * Created by show on 1/10/18.
- */
-
 public class ImgDetailInfo {
 
     String id;

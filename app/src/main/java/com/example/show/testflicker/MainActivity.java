@@ -14,8 +14,7 @@ import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.FragmentActivity;
+
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -28,7 +27,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -38,7 +36,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.List;
 
 import static com.example.show.testflicker.StringValue.*;
 
@@ -73,14 +70,16 @@ public class MainActivity extends AppCompatActivity implements HTTPConnect.Callb
 
         listView = findViewById(R.id.list_item);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
                 ImgConetent img = (ImgConetent) parent.getItemAtPosition(position);
                 Intent intent = new Intent(getApplicationContext(), ActivityInfo.class);
                 intent.putExtra(STR_ID,img.getId());
                 intent.putExtra(STR_URL, img.getMediumPhotoURL());
                 startActivity(intent);
-//                Toast.makeText(getApplicationContext(), "item" + img.getId() + " should open new Activity", Toast.LENGTH_LONG).show();
+
 
             }
         });
@@ -110,17 +109,16 @@ public class MainActivity extends AppCompatActivity implements HTTPConnect.Callb
     BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+
             String str = intent.getAction().toString();
             if (str.equals(STR_KEY)) {
                 str = intent.getStringExtra(STR_SEARCH);
             }
 
-            Log.i("===mReceive", str);
             if (apps != null)
                 apps.clear();
 
             search(str);
-
 
         }
     };
@@ -189,10 +187,9 @@ public class MainActivity extends AppCompatActivity implements HTTPConnect.Callb
     final Handler handler = new Handler() {
         public void handleMessage(Message msg) {
 
-//            apps = (ArrayList<ImgConetent>) msg.obj;
-
             processData(msg);
             loadListItems();
+
         }
     };
 
@@ -201,18 +198,18 @@ public class MainActivity extends AppCompatActivity implements HTTPConnect.Callb
         String jsonString = (String)msg.obj;
         try {
             JSONObject root = new JSONObject(jsonString.replace("jsonFlickrApi(", "").replace(")", ""));
-            JSONObject photos = root.getJSONObject("photos");
-            JSONArray imageJSONArray = photos.getJSONArray("photo");
+            JSONObject photos = root.getJSONObject(STR_PHOTOS);
+            JSONArray imageJSONArray = photos.getJSONArray(STR_PHOTO);
             for (int i = 0; i < imageJSONArray.length(); i++) {
                 JSONObject item = imageJSONArray.getJSONObject(i);
 
                 ImgConetent img = new ImgConetent();
-                img.setId(item.getString("id"));
-                img.setOwner(item.getString("owner"));
-                img.setSecret(item.getString("secret"));
-                img.setServer(item.getString("server"));
-                img.setFarm(item.getString("farm"));
-                img.setTitle(item.getString("title"));
+                img.setId(item.getString(STR_ID));
+                img.setOwner(item.getString(STR_OWNER));
+                img.setSecret(item.getString(STR_SECRET));
+                img.setServer(item.getString(STR_SERVER));
+                img.setFarm(item.getString(STR_FARM));
+                img.setTitle(item.getString(STR_TITLE));
                 img.setSquarePhotoURL(FlickrMgr.createPhotoURL(FlickrMgr.FLICKR_IMG_SQUARE, img));
                 img.setMediumPhotoURL(FlickrMgr.createPhotoURL(FlickrMgr.FLICKR_IMG_MED, img));
 

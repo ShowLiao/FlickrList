@@ -46,7 +46,7 @@ public class HTTPConnect implements Runnable {
     }
 
     public void newThread() {
-        Log.e(fun, "newThread");
+
         Thread childThread = new Thread(this, "newThread");
         childThread.start();
     }
@@ -65,7 +65,7 @@ public class HTTPConnect implements Runnable {
             URL mUrl = new URL(url);
             ByteArrayOutputStream baos = null;
             InputStream is = null;
-            Log.e(fun, "url");
+
             HttpsURLConnection httpURLConnection = null;
 
             httpURLConnection = (HttpsURLConnection) mUrl.openConnection();
