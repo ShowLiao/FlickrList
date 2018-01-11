@@ -1,11 +1,5 @@
 package com.example.show.testflicker;
 
-import android.app.Activity;
-import android.app.Application;
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -36,16 +30,21 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements HTTPConnect.Callback{
+import static com.example.show.testflicker.StringValue.*;
+
+public class MainActivity extends AppCompatActivity implements HTTPConnect.Callback {
 
     private ArrayList<ImgConetent> apps;
-    private static final String STR_KEY = "key";
 
     MainActivity self;
     ListView listView;
@@ -70,13 +69,19 @@ public class MainActivity extends AppCompatActivity implements HTTPConnect.Callb
         createIntentFilter();
 
         apps = new ArrayList<>();
-        search("9windows");
+        search(STR_KEY);
 
         listView = findViewById(R.id.list_item);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getApplicationContext(), "item" + position + " should open new Activity", Toast.LENGTH_LONG).show();
+                ImgConetent img = (ImgConetent) parent.getItemAtPosition(position);
+                Intent intent = new Intent(getApplicationContext(), ActivityInfo.class);
+                intent.putExtra(STR_ID,img.getId());
+                intent.putExtra(STR_URL, img.getMediumPhotoURL());
+                startActivity(intent);
+//                Toast.makeText(getApplicationContext(), "item" + img.getId() + " should open new Activity", Toast.LENGTH_LONG).show();
+
             }
         });
     }
@@ -106,8 +111,14 @@ public class MainActivity extends AppCompatActivity implements HTTPConnect.Callb
         @Override
         public void onReceive(Context context, Intent intent) {
             String str = intent.getAction().toString();
+            if (str.equals(STR_KEY)) {
+                str = intent.getStringExtra(STR_SEARCH);
+            }
 
-            apps = new ArrayList<>();
+            Log.i("===mReceive", str);
+            if (apps != null)
+                apps.clear();
+
             search(str);
 
 
@@ -157,25 +168,6 @@ public class MainActivity extends AppCompatActivity implements HTTPConnect.Callb
 
                 new DownloadImageFromInternet((ImageView) findViewById(R.id.imgView))
                         .execute(apps.get(position).getSquarePhotoURL());
-//                ImageView img = convertView.findViewById(R.id.imgView);
-//                Bitmap bimage = null;
-//                InputStream in = null;
-//                try {
-//                    in = new java.net.URL(apps.get(position).getSquarePhotoURL()).openStream();
-//                    bimage = BitmapFactory.decodeStream(in);
-//
-//                } catch (Exception e) {
-//
-//                    e.printStackTrace();
-//                } finally {
-//                    if (null != in)
-//                        try {
-//                            in.close();
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                }
-//                img.setImageBitmap(bimage);
 
                 return convertView;
             }
@@ -188,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements HTTPConnect.Callb
     }
 
     @Override
-    public void onNewMessage(List<ImgConetent> imgList) {
+    public void onNewMessage(String imgList) {
         Message msg = handler.obtainMessage();
         msg.obj = imgList;
         handler.sendMessage(msg);
@@ -197,27 +189,47 @@ public class MainActivity extends AppCompatActivity implements HTTPConnect.Callb
     final Handler handler = new Handler() {
         public void handleMessage(Message msg) {
 
-            apps = (ArrayList<ImgConetent>) msg.obj;
+//            apps = (ArrayList<ImgConetent>) msg.obj;
 
-            for (ImgConetent c:apps) {
-//
-////                Log.e(fun, c.getId());
-                Log.e("handle====", c.getSquarePhotoURL());
-//                Log.e(fun, c.getTitle());
-//                new DownloadImageFromInternet((ImageView) findViewById(R.id.imgView))
-//                        .execute(c.getMediumPhotoURL());
-            }
-
+            processData(msg);
             loadListItems();
         }
     };
+
+    private void processData(Message msg) {
+
+        String jsonString = (String)msg.obj;
+        try {
+            JSONObject root = new JSONObject(jsonString.replace("jsonFlickrApi(", "").replace(")", ""));
+            JSONObject photos = root.getJSONObject("photos");
+            JSONArray imageJSONArray = photos.getJSONArray("photo");
+            for (int i = 0; i < imageJSONArray.length(); i++) {
+                JSONObject item = imageJSONArray.getJSONObject(i);
+
+                ImgConetent img = new ImgConetent();
+                img.setId(item.getString("id"));
+                img.setOwner(item.getString("owner"));
+                img.setSecret(item.getString("secret"));
+                img.setServer(item.getString("server"));
+                img.setFarm(item.getString("farm"));
+                img.setTitle(item.getString("title"));
+                img.setSquarePhotoURL(FlickrMgr.createPhotoURL(FlickrMgr.FLICKR_IMG_SQUARE, img));
+                img.setMediumPhotoURL(FlickrMgr.createPhotoURL(FlickrMgr.FLICKR_IMG_MED, img));
+
+                apps.add(img);
+
+            }
+
+        } catch(JSONException e){
+            e.printStackTrace();
+        }
+    }
 
     private class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
         private WeakReference<ImageView> imageView;
 
         public DownloadImageFromInternet(ImageView img) {
             this.imageView = new WeakReference<ImageView>(img);
-//            Toast.makeText(getApplicationContext(), "Please wait, it may take a few minute...", Toast.LENGTH_SHORT).show();
         }
 
         protected Bitmap doInBackground(String... urls) {
