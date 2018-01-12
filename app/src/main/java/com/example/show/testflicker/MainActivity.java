@@ -13,8 +13,10 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -141,34 +143,43 @@ public class MainActivity extends AppCompatActivity implements HTTPConnect.Callb
     }
 
     public void loadListItems() {
-        ListView listView = findViewById(R.id.list_item);
 
-        ArrayAdapter<ImgConetent> adapter = new ArrayAdapter<ImgConetent>(this, R.layout.item, apps) {
+        final ArrayAdapter<ImgConetent> adapter = new ArrayAdapter<ImgConetent>(this, R.layout.item, apps) {
+
+            class ViewHolder {
+                ImageView icon;
+                TextView text;
+            }
 
             @NonNull
             @Override
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 
-                if (null == convertView)
+                ViewHolder holder;
+                if (null == convertView) {
                     convertView = getLayoutInflater().inflate(R.layout.item, null);
+                    holder = new ViewHolder();
+                    holder.icon = convertView.findViewById(R.id.imgView);
+                    holder.text = convertView.findViewById(R.id.photo_label);
+                    convertView.setTag(holder);
+                } else {
+                    holder = (ViewHolder)convertView.getTag();
+                }
 
-                TextView viewLabel = convertView.findViewById(R.id.photo_label);
-                viewLabel.setText(apps.get(position).getTitle());
+                ImgConetent mImg = getItem(position);
+                holder.text.setText(mImg.getTitle());
 
-                TextView viewDesc = convertView.findViewById(R.id.photo_desc);
-                viewDesc.setText(apps.get(position).getTitle());
+                if (holder.icon != null) {
 
-                new DownloadImageFromInternet((ImageView) findViewById(R.id.imgView))
-                        .execute(apps.get(position).getSquarePhotoURL());
+                    new DownloadImageFromInternet(holder.icon)
+                            .execute(mImg.getSquarePhotoURL());
+                }
 
                 return convertView;
             }
-
-
         };
 
         listView.setAdapter(adapter);
-
     }
 
     @Override
