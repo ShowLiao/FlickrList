@@ -273,5 +273,11 @@ public class MainActivity extends AppCompatActivity implements HTTPConnect.Callb
             return bimage;
         }
     }
+    
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        getApplicationContext().unregisterReceiver(mReceiver);
+    }
 
 }
